@@ -31,8 +31,8 @@ async function postReceipt(req,runId){
   if(o.status===503&&o.attempt===1){run.dispatches.push({...d,attempt:2,traceparent:`00-${run.traceId}-${hex(8)}-01`});continue;}
   if(o.status===0&&o.errorType==="timeout"){run.suppressed.push(...(run.policy.effectTools||[]));run.status="failed";}
  }
- const pending=run.dispatches.filter(d=>!run.receipts.some(r=>r.actionId===d.actionId&&r.attempt===d.attempt));
- if(run.status!=="failed"&&pending.length===0&&run.dispatches.length>0){
+ const effectDone=run.dispatches.find(d=>d.phase==="effect"&&run.receipts.some(r=>r.actionId===d.actionId&&r.attempt===d.attempt)); if(effectDone){const rr=run.receipts.find(r=>r.actionId===effectDone.actionId&&r.attempt===effectDone.attempt);run.status=rr?.status===200?"completed":"failed";} const pending=run.dispatches.filter(d=>!run.receipts.some(r=>r.actionId===d.actionId&&r.attempt===d.attempt));
+ if(run.status!=="failed"&&run.status!=="completed"&&pending.length===0&&run.dispatches.length>0){
   if(run.receipts.some(r=>r.status!==200))run.status="failed";
   else {const effect=(run.policy.effectTools||[]).find(x=>run.catalog.some(t=>t.name===x));
    if(effect){const destructive=(run.policy.approvalRequiredFor||[]).includes(effect);const existing=run.approvals.find(a=>a.toolName===effect);
