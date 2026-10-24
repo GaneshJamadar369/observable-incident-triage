@@ -45,4 +45,4 @@ async function postReceipt(req,runId){
  return json(publicRun(run));
 }
 
-export default {async fetch(req,env){const u=new URL(req.url); if(req.method==="POST"&&u.pathname==="/v2/incidents")return postIncident(req,env); const m=u.pathname.match(/^\/v2\/incidents\/([^/]+)$/); if(m&&req.method==="GET"){const r=runs.get(m[1]);return r?json(publicRun(r)):json({error:"not_found"},404);} if(m&&req.method==="POST")return postReceipt(req,m[1]); return json({error:"not_found"},404);}};
+export default {async fetch(req,env){const u=new URL(req.url); if(req.method==="POST"&&u.pathname==="/v2/incidents")return postIncident(req,env); const m=u.pathname.match(/^\/v2\/incidents\/([^/]+)(\/receipts)?$/); if(m&&req.method==="GET"&&!m[2]){const r=runs.get(m[1]);return r?json(publicRun(r)):json({error:"not_found"},404);} if(m&&req.method==="POST"&&m[2])return postReceipt(req,m[1]); return json({error:"not_found"},404);}};
